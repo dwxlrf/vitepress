@@ -7,31 +7,69 @@ on:
          - master
 
 jobs:
-   deploy:
-      runs-on: ubuntu-latest
-      steps:
-         - uses: actions/checkout@v3
-           with:
-              fetch-depth: 0
-         - uses: actions/setup-node@v3
-           with:
-              node-version: 20
-              cache: npm
-         - run: npm install --frozen-lockfile
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v3
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
 
-         - name: Build
-           run: npm run docs:build
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url}}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+        with:
+          # Github 会在 workflow 中自动生成 GIHUBT_TOKEN，用于认证 workflow 的运行
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 静态资源目录设置
+          publish_dir: .vitepress/dist
+          # 默认发布到 gh-pages 分支上，可以指定特定的发布分支（不能选拉取代码的分支）
+          publish_branch: gh-pages
+          full_commit_message: ${{ github.event.head_commit.message }}
 
-         - name: Deploy
-            # 将构建产物 commit 到一个分支上，用于发布静态站点资源
-            # https://github.com/peaceiris/actions-gh-pages
-            #不要将peaceiris改为自己的仓库名，我单纯的以为这个需要改成自己的仓库名，部署上去就build失败了，需引用该仓库的配置
-           uses: peaceiris/actions-gh-pages@v3
-           with:
-              # Github 会在 workflow 中自动生成 GIHUBT_TOKEN，用于认证 workflow 的运行
-              github_token: ${{ secrets.GITHUB_TOKEN }}
-              # 静态资源目录设置
-              publish_dir: .vitepress/dist
-              # 默认发布到 gh-pages 分支上，可以指定特定的发布分支（不能选拉取代码的分支）
-              publish_branch: gh-pages
-              full_commit_message: ${{ github.event.head_commit.message }}
+#jobs:
+#   deploy:
+#      runs-on: ubuntu-latest
+#      steps:
+#         - uses: actions/checkout@v3
+#           with:
+#              fetch-depth: 0
+#         - uses: actions/setup-node@v3
+#           with:
+#              node-version: 20
+#              cache: npm
+#         - run: npm install --frozen-lockfile
+#
+#         - name: Build
+#           run: npm run docs:build
+#
+#         - name: Deploy
+#            # 将构建产物 commit 到一个分支上，用于发布静态站点资源
+#            # https://github.com/peaceiris/actions-gh-pages
+#            #不要将peaceiris改为自己的仓库名，我单纯的以为这个需要改成自己的仓库名，部署上去就build失败了，需引用该仓库的配置
+#           uses: peaceiris/actions-gh-pages@v3
+#           with:
+#              # Github 会在 workflow 中自动生成 GIHUBT_TOKEN，用于认证 workflow 的运行
+#              github_token: ${{ secrets.GITHUB_TOKEN }}
+#              # 静态资源目录设置
+#              publish_dir: .vitepress/dist
+#              # 默认发布到 gh-pages 分支上，可以指定特定的发布分支（不能选拉取代码的分支）
+#              publish_branch: gh-pages
+#              full_commit_message: ${{ github.event.head_commit.message }}
