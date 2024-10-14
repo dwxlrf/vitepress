@@ -4,14 +4,14 @@ layout: home
 
 hero:
   image:
-    src: "/public/logo.png"
+    src: /public/logo.png
     alt: "头像"
   name: "dwx"
   text: "------广告位招租------"
   tagline: 学而不思则罔
   actions:
     - theme: brand
-      text: 10.14作业
+      text: 分布式消息框架RabbitMQ
       link: /分布式消息框架RabbitMQ-.md
     # - theme: alt
     #   text: API Examples

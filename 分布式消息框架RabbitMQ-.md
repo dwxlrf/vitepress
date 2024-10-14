@@ -18,7 +18,7 @@
   - Exchange：交换器。相当于服务器中的组件，用于操作数据
   - Queue：队列。存储运送的信息
 
-![image-20241014214646779](分布式消息框架RabbitMQ-.assets/image-20241014214646779.png)
+![image-20241014214646779](public/分布式消息框架RabbitMQ-.assets/image-20241014214646779.png)
 
 ## 3.RabbitMQ的五种运行模式
 
