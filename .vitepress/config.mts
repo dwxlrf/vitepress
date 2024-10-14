@@ -8,16 +8,16 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Home', link: '/' },
-      { text: 'Examples', link: '/markdown-examples' }
+      { text: '首页', link: '/' },
+      { text: '汇总', link: '/分布式消息框架RabbitMQ-.md' }
     ],
 
     sidebar: [
       {
-        text: 'Examples',
+        text: '汇总',
         items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
+          { text: '10.14作业', link: '/分布式消息框架RabbitMQ-.md' },
+          // { text: 'Runtime API Examples', link: '/api-examples' }
         ]
       }
     ],
