@@ -1,0 +1,35 @@
+Arguments: 
+  E:\software\NVM\nodejs\node.exe E:\software\Yarn\bin\yarn.js install
+
+PATH: 
+  D:\VM\bin\;D:\ider\MySql\mysql-8.0.33-winx64\bin;D:\ider\Maven\apache-maven-3.9.7\bin;C:\Windows\System32;D:\ider\JDK\jdk11\bin;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;D:\Git\cmd;"D:\ider\Tomcat\apache-tomcat-10.1.11\bin;D:\ider\Tomcat\apache-tomcat-10.1.11\lib";E:\software\TortoiseGit\bin;E:\software\Yarn\bin\;E:\software\NVM\nvm;E:\software\NVM\nodejs;E:\software\NVM\nodejs\node_globel;E:\software\NVM\nodejs\node_cache;C:\Windows\System32;C:\Windows;C:\Windows\System32\Wbem;D:\Microsoft VS Code\bin\;;E:\software\微信web开发者工具\dll;C:\Users\92705\AppData\Local\Microsoft\WindowsApps;C:\Users\92705\.dotnet\tools;D:\ider\ider\bin;;C:\Users\92705\AppData\Local\Yarn\bin;E:\software\NVM\nvm;E:\software\NVM\nodejs;D:\Microsoft VS Code\bin;E:\vitepress\myvitepress\node_modules\.bin
+
+Yarn version: 
+  1.22.4
+
+Node version: 
+  18.17.1
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: EPERM: operation not permitted, unlink 'E:\vitepress\myvitepress\node_modules\@rollup\rollup-win32-x64-msvc\rollup.win32-x64-msvc.node'
+
+npm manifest: 
+  {
+    "devDependencies": {
+      "vitepress": "^1.4.1"
+    },
+    "scripts": {
+      "docs:dev": "vitepress dev",
+      "docs:build": "vitepress build",
+      "docs:preview": "vitepress preview"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

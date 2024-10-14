@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base: '/vitepress/',
   title: "dwx",
   description: "学而不思则罔",
   themeConfig: {

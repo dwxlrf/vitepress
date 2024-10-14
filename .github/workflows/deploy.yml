@@ -1,107 +1,85 @@
 ## .github > workflows > deploy.yml
-#name: Deploy
-#
-#on:
-#   push:
-#      branches:
-#         - master
-#
-#jobs:
-#   deploy:
-#      runs-on: ubuntu-latest
-#      steps:
-#         - uses: actions/checkout@v4
-#           with:
-#              fetch-depth: 0
-#         - uses: actions/setup-node@v4
-#           with:
-#              node-version: 20
-#              cache: npm
-#         - run: npm install --frozen-lockfile
-#
-#         - name: Build
-#           run: npm run docs:build
-#
-#         - name: Deploy
-#            # 将构建产物 commit 到一个分支上，用于发布静态站点资源
-#            # https://github.com/peaceiris/actions-gh-pages
-#            #不要将peaceiris改为自己的仓库名，我单纯的以为这个需要改成自己的仓库名，部署上去就build失败了，需引用该仓库的配置
-#           uses: peaceiris/actions-gh-pages@v3
-#           with:
-#              # Github 会在 workflow 中自动生成 GIHUBT_TOKEN，用于认证 workflow 的运行
-#              github_token: ${{ secrets.GITHUB_TOKEN }}
-#              # 静态资源目录设置
-#              publish_dir: vitepress/dist
-#              # 默认发布到 gh-pages 分支上，可以指定特定的发布分支（不能选拉取代码的分支）
-#              publish_branch: gh-pages
-#              full_commit_message: ${{ github.event.head_commit.message }}
-
-
-
-name: Deploy VitePress site to Pages
+name: Deploy
 
 on:
-  push:
-    # 推送任意tags或者master分支推送的时候触发任务
-    tags:
-      - '*'
-    branches:
-      - master
-
-  workflow_dispatch:
+   push:
+      branches:
+         - master
 
 jobs:
-  deploy-and-sync:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v4
-        with:
-          ref: 'master'
+   deploy:
+      runs-on: ubuntu-latest
+      steps:
+         - uses: actions/checkout@v4
+           with:
+              fetch-depth: 0
+         - uses: actions/setup-node@v4
+           with:
+              node-version: 20
+              cache: npm
+         - run: npm install --frozen-lockfile
 
-      - name: Install yarn
-        run: corepack enable
+         - name: Build
+           run: npm run docs:build
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'yarn'
+         - name: Deploy
+            # 将构建产物 commit 到一个分支上，用于发布静态站点资源
+            # https://github.com/peaceiris/actions-gh-pages
+            #不要将peaceiris改为自己的仓库名，我单纯的以为这个需要改成自己的仓库名，部署上去就build失败了，需引用该仓库的配置
+           uses: peaceiris/actions-gh-pages@v3
+           with:
+              # Github 会在 workflow 中自动生成 GIHUBT_TOKEN，用于认证 workflow 的运行
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              # 静态资源目录设置
+              publish_dir: vitepress/dist
+              # 默认发布到 gh-pages 分支上，可以指定特定的发布分支（不能选拉取代码的分支）
+              publish_branch: gh-pages
+              full_commit_message: ${{ github.event.head_commit.message }}
 
-      - name: Install dependencies
-        run: yarn install
 
-      - name: Build Site
-        run: npm run docs:build
 
-      # 将文档产物提交到gh-pages分支
-      - name: Deploy for Github 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
-        with:
-          branch: gh-pages
-          folder: .vitepress/dist
-          # enable single-commit to reduce the repo size
-          single-commit: true
-          clean: true
-
-#      - name: Sync to Gitee
-#        uses: wearerequired/git-mirror-action@v1.2.0
-#        env:
-#          SSH_PRIVATE_KEY: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
-#        with:
-#          # GitHub 仓库地址
-#          source-repo: git@github.com:chargeduck/notes.git
-#          # Gitee 仓库地址
-#          destination-repo: git@gitee.com:chargeduck/notes.git
+#name: Deploy VitePress site to Pages
 #
-#      - name: Build Gitee Pages
-#        uses: yanglbme/gitee-pages-action@main
+#on:
+#  push:
+#    # 推送任意tags或者master分支推送的时候触发任务
+#    tags:
+#      - '*'
+#    branches:
+#      - master
+#
+#  workflow_dispatch:
+#
+#jobs:
+#  deploy-and-sync:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout 🛎️
+#        uses: actions/checkout@v4
 #        with:
-#          # 替换为你的 Gitee 用户名
-#          gitee-username: chargeduck
-#          # 注意在 Settings->Secrets 配置 GITEE_PASSWORD
-#          gitee-password: ${{ secrets.GITEE_PASSWORD }}
-#          # 注意替换为你的 Gitee 仓库，仓库名严格区分大小写，请准确填写，否则会出错
-#          gitee-repo: chargeduck/notes
-#          # 要部署的分支，默认是 master，若是其他分支，则需要指定（指定的分支必须存在）
+#          ref: 'master'
+#
+#      - name: Install yarn
+#        run: corepack enable
+#
+#      - uses: actions/setup-node@v3
+#        with:
+#          node-version: '18'
+#          cache: 'yarn'
+#
+#      - name: Install dependencies
+#        run: yarn install
+#
+#      - name: Build Site
+#        run: npm run docs:build
+#
+#      # 将文档产物提交到gh-pages分支
+#      - name: Deploy for Github 🚀
+#        uses: JamesIves/github-pages-deploy-action@v4.4.1
+#        with:
 #          branch: gh-pages
+#          folder: .vitepress/dist
+#          # enable single-commit to reduce the repo size
+#          single-commit: true
+#          clean: true
 
