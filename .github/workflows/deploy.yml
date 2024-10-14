@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions-gh-pages@v3
+        uses: actions/deploy-pages@v2
         with:
           # Github 会在 workflow 中自动生成 GIHUBT_TOKEN，用于认证 workflow 的运行
           github_token: ${{ secrets.GITHUB_TOKEN }}
