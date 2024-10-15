@@ -4,7 +4,7 @@ import sidebar from './sidebar.mts'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: '/dongwenxiang.top/',
+  base: '/',
   title: "dwx",
   description: "学而不思则罔",
   srcDir: 'docs',
