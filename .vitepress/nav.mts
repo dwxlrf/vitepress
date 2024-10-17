@@ -10,6 +10,10 @@ export default [
             {
                 text: 'mysql',
                 link: '/mysql/hello.md'
+            },
+            {
+                text: '虚拟机',
+                link: '/虚拟机/Docker.md'
             }
         ]
     }
