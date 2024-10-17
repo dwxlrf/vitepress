@@ -4,6 +4,7 @@ import sidebar from './sidebar.mts'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  ignoreDeadLinks: true,
   base: '/',
   title: "dwx",
   description: "学而不思则罔",
