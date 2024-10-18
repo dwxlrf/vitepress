@@ -1,8 +1,10 @@
 # RabbitMQ
 
-## 1、什么是RabbitMQ
+## 一、什么是RabbitMQ
 
-[***官网***]([Spring AMQP](https://spring.io/projects/spring-amqp/))
+[Spring AMQP官网](https://spring.io/projects/spring-amqp/)
+
+该技术为Spring AMQP的一种
 
 理解RabbitMQ前我们先认识三个概念：生产者、消费者、代理
 
@@ -28,7 +30,7 @@
 
   1.时效性差
 
-## 2、RabbitMQ运作模式
+## 二、RabbitMQ运作模式
 
 ``执行运作前先绑定（Binding），就是一套规则，为整体的操作做前置准备``
 
@@ -42,7 +44,7 @@
 
 ![image-20241014214646779](分布式消息框架RabbitMQ-.assets/image-20241014214646779.png)
 
-## 3、RabbitMQ的五种运行模式（快速开始）
+## 三、RabbitMQ的五种运行模式（快速开始）
 
 每种模式取决于不同的需求，根据需求来决定自己使用哪种运行模式。
 
@@ -122,7 +124,11 @@ spring:
 
 > 操作工具类
 
-封装了RabbitTemplate工具，用于发送消息，操作前注入该工具类,代码交互发送用convertAndSend（）方法，不同参数代表不同含义
+1.SpringAMQP自身也封装`AmqpTemplate`工具
+
+2.RabbitMQ封装了`RabbitTemplate`工具
+
+都可以用于发送消息，操作前注入该工具类,代码交互发送用`convertAndSend（）`方法，不同参数代表不同含义
 
 > 接受不同的数据类型，完成后可以直接发送各种类型数据
 

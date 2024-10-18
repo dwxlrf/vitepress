@@ -1,49 +1,143 @@
-# 一、OpenFeign调用如何拦截请求，改变请求相关信息
+# 三方调用框架-OpenFeign
 
-## 1、RequestInterceptor
+## 前言
 
-> 能够拦截每个OpenFeign请求，并执行内部的apply方法
->
-> - 在apply方法中就可以改变请求相关信息
+[服务注册和发现-nacos](https://yiyan.baidu.com/)
 
+使用此调用三方服务前需使用`nacos`将服务注册到服务中心
 
+## 一、OpenFeign是什么？
 
-# 二、跨域问题
+pring Cloud OpenFeign是一种基于Spring Cloud的声明式REST客户端，它简化了与HTTP服务交互的过程。往常Spring自带的`RestTeamplate太过繁琐`，OpenFeign可以通过`注解`的方式来声明请求参数、请求方式、请求头等信息。调用自身接口更为便捷`只要配置和注解`就可以，同时，它还提供了`负载均衡`和`服务发现`等功能，Spring Cloud OpenFeign能够提高应用程序的可靠性、可扩展性和可维护性，是构建微服务架构的重要工具之一。
 
-## 1、域
+## 二、OpenFeign调用如何拦截请求
 
-> 域由三部分组成：协议、IP、端口
+在OpenFeign中有`RequestInterceptor`这样一个接口，其内部只有一个`apply`方法，该方法能够拦截每一个OpenFeign的请求
 
-> 三部门都相同，则为同域。
->
-> 同域示例：
->
-> - http://localhost:8081/items     http://localhost:8081/carts
-> - http://10.31.10.11/items     http://10.31.10.11:80/carts
+``RequestInterceptor接口``
 
-> 至少有一个不同，就形成了跨域。
->
-> - 在发起Ajax请求时，出现跨域会违反浏览器的同源策略，造成正常功能受影响
->   - 出现了Ajax请求跨域问题是，是请求能够到达目标接口，但是响应无法返回
-> -  同源策略（Same origin policy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。 
->
-> 跨域示例：
->
-> - http://localhost/items     https://localhost/carts     协议不同
-> - http://10.31.10.11/items     http://10.31.10.12/carts    IP不同
-> - http://localhost:8081/items     http://localhost:8082/carts      端口不同
+![image-20241018202417023](OpenFeign.assets/image-20241018202417023.png)
 
+当我们想拦截OpenFeign请求做验证和操作时，可以写一个配置类，注入容器即可。在其内部的apply方法重写即可写入自己想要做的操作
 
+``OpenFeign拦截``
 
-## 2、SpringMVC解决跨域问题
+```java
+@Configuration
+public class FeignConfig {
+    @Bean
+    public RequestInterceptor requestInterceptor(){
+        //OpenFeign调用有没有校验Token？？？ No
+        return new RequestInterceptor() {
+            @Override
+            public void apply(RequestTemplate template) {
+                //验证当前用户，将userId放入user-info请求头中
+                Long userId = UserContext.getUser();
+                if (userId != null) {
+                    template.header("user-info", userId.toString());
+                }
+            }
+        };
+    }
+```
+
+## 三、OpenFeign快速开始
+
+### 1.导入依赖
+
+```xml
+  <!--openFeign-->
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
+  </dependency>
+  <!--负载均衡器-->
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+  </dependency>
+```
+
+### 2.启动OpenFeign
+
+在启动类上添加注解`@EnableFeignClients`。当调用自身服务不在同一模块中时，需要在注解添加扫描参数，参数结果为被调用Client接口包路径
+
+``启动类``
+
+```java
+//com.api.client为写的client接口包路径
+@EnableFeignClients(basePackages = "com.api.client")
+@MapperScan("com.trade.mapper")
+@SpringBootApplication
+public class TradeApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(TradeApplication.class, args);
+    }
+}
+```
+
+### 3.编写具体调用接口
+
+当前面两步弄好之后，就可以创建具体的调用接口了，前提需要保持`请求路径，方法类型，方法参数一致！！！`
+
+``client接口``
+
+```java
+//trade-service为注册到nacos的服务名称，必须保持一致
+//configuration = FeignConfig.classs使用FeignConfig类的配置
+@FeignClient(value = "trade-service",configuration = FeignConfig.class)
+public interface TradeClient{
+
+    //put请求方法	/orders/{orderId}请求路径	@PathVariable("orderId")参数一致
+    @PutMapping("/orders/{orderId}")
+    void markOrderPaySuccess(@PathVariable("orderId") Long orderId);
+}
+```
+
+## 四、解决三方调用发生的跨域
+
+### 1.域
+
+域由三部分组成：协议、IP、端口
+
+三部分都相同，则为同域。
+
+同域示例：
+
+- `http://localhost:8081/items`  `http://localhost:8081/carts`
+- `http://10.31.10.11/items`     `http://10.31.10.11:80/carts`
+
+至少有一个不同，就形成了跨域。
+
+- 在发起Ajax请求时，出现跨域会违反浏览器的同源策略，造成正常功能受影响
+  - 出现了Ajax请求跨域问题是，是请求能够到达目标接口，但是响应无法返回
+- 同源策略（Same origin policy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。 
+
+跨域示例：
+
+- `http://localhost/items`   `https://localhost/carts  `   协议不同
+- `http://10.31.10.11/items`     `http://10.31.10.12/carts  `  IP不同
+- `http://localhost:8081/items`     `http://localhost:8082/carts `     端口不同
+
+### 2.SpringMVC解决跨域问题
 
 在控制器上增加注解 `@CrossOrigin`
 
+### 3.gateway网关解决跨域问题
 
+``导入依赖``
 
-## 3、网关解决跨域问题
+```xml
+		<!--网关-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+```
 
-application.yml 增加如下配置
+> 配置有两种方法
+
+``application.yml 增加配置1``
 
 ```yml
 spring:
@@ -69,11 +163,39 @@ spring:
             maxAge: 360000 # 这次跨域检测的有效期
 ```
 
->  Controller上就无需配置
+``application.yml 增加配置2``
 
+```yml
+spring:
+  cloud:
+    gateway:   
+      # 。。。
+      routes: #路由表
+        - id: item-service #路由的唯一标识
+          uri: lb://item-service   # 路由的目标服务，lb代表负载均衡，会从注册中心拉取服务列表
+          predicates: #断言规则，满足下面规则则会路由到对应的微服务
+            - Path=/items/**,/search/** # 这里是以请求路径作为判断规则
+          filters:
+            - AddRequestHeader=k1, v1  #增加请求头，针对当前路由生效
+        - id: cart-service
+          uri: lb://cart-service
+          predicates:
+            - Path=/carts/**
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**,/addresses/**
+        - id: trade-service
+          uri: lb://trade-service
+          predicates:
+            - Path=/orders/**
+        - id: pay-service
+          uri: lb://pay-service
+          predicates:
+            - Path=/pay-orders/**
+```
 
-
-4、Nginx也可以配置跨域
+### 4.Nginx配置解决跨域问题
 
 ```sh
 server {
@@ -94,168 +216,4 @@ server {
     }
 }
 ```
-
-
-
-# 三、配置中心
-
-## 1、配置统一管理
-
-### 1、在配置中心创建配置文件
-
-- shared-jdbc.yml
-
-```yml
-spring:
-  datasource:
-    url: jdbc:mysql://${hm.db.host}:3306/${hm.db.name}?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: ${hm.db.pw}
-mybatis-plus:
-  configuration:
-    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
-  global-config:
-    db-config:
-      update-strategy: not_null
-      id-type: auto
-```
-
-- shared-log.yaml
-
-```yml
-logging:
-  level:
-    com.hmall: debug
-  pattern:
-    dateformat: HH:mm:ss:SSS
-  file:
-    path: "logs/${spring.application.name}"
-```
-
-- shared-swagger.yaml
-
-```yml
-knife4j:
-  enable: true
-  openapi:
-    title: ${hm.title}
-    description: ${hm.description}
-    email: zhanghuyi@itcast.cn
-    concat: 虎哥
-    url: https://www.itcast.cn
-    version: v1.0.0
-    group:
-      default:
-        group-name: default
-        api-rule: package
-        api-rule-resources:
-          - ${hm.packageStr}
-```
-
-
-
-### 2、本地微服务【cart-service】
-
-- bootstrap.yaml
-
-```yml
-spring:
-  application:
-    name: cart-service
-  profiles:
-    active: local
-  cloud:
-    nacos:
-      config:  #配置中心
-        server-addr: localhost:8848  #配置中心地址
-        file-extension: yaml  #配置中心中配置文件的后缀
-        shared-configs:
-          - data-id: shared-jdbc.yaml  #需要拉取的配置文件名称
-          - data-id: shared-log.yaml  #需要拉取的配置文件名称
-          - data-id: shared-swagger.yaml  #需要拉取的配置文件名称
-```
-
-- application.yaml
-
-```yml
-server:
-  port: 8082
-spring:
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-feign:
-  okhttp:
-    enabled: true
-```
-
-- application-local.yaml
-
-```yml
-hm:
-  db:
-    host: localhost
-    pw: root # 修改为自己数据库的密码
-    name: hm-cart
-  title: 黑马商城购物车服务接口文档
-  description: 黑马商城购物车服务接口文档
-  packageStr: com.hmall.cart.controller
-```
-
-
-
-## 2、配置实时更新
-
-当 配置中心有 `微服务名称.yml` 文件时，本地微服务会从配置中心中去拉取该内容
-
-### 1、配置中心创建配置文件
-
-- cart-service.yaml
-
-```yml
-hm:
-  cart:
-    maxAmount: 1 # 购物车商品数量上限
-test: TEST
-```
-
-### 2、本地购物车服务
-
-#### 1、新建一个 CartProperties
-
-```java
-@Data
-@Component
-@ConfigurationProperties(prefix = "hm.cart")
-public class CartProperties {
-    private Integer maxAmount;
-}
-```
-
-#### 2、修改 CartServiceImpl 的代码
-
-![1728633373116](assets/1728633373116.png)
-
-![1728633394625](assets/1728633394625.png)
-
-
-
-### 3、两种情况
-
-- 实体绑定配置文件内容：配置中心会实时更新
-- 普通变量获取配置：需要类上标记@RefreshScop和变量上标记@Value注解，才能实时更新
-
-
-
-# 四、服务保护
-
-## 1、服务雪崩
-
-微服务之间调用是很复杂的。
-
-一个完整的业务功能，可以会出现多个服务的调用通信
-
-那么由于一个服务出现了问题，导致调用它的那个服务也出现了问题，这种出现级联失败的情况，叫服务雪崩
 
